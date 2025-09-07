@@ -1,0 +1,106 @@
+<div class="row g-3">
+  <div class="col-12">
+    <div class="glass p-4">
+      <h3 class="mb-0">Dashboard <span class="muted">(<%= yyyymm %>)</span></h3>
+    </div>
+  </div>
+
+  <div class="col-md-4" data-aos="fade-up">
+    <div class="card glass glow p-3 h-100">
+      <h6 class="muted">Pemasukan</h6>
+      <div class="stat text-success"><%= currency(sum.income, settings.currency) %></div>
+    </div>
+  </div>
+  <div class="col-md-4" data-aos="fade-up" data-aos-delay="50">
+    <div class="card glass glow p-3 h-100">
+      <h6 class="muted">Pengeluaran</h6>
+      <div class="stat text-danger"><%= currency(sum.expense, settings.currency) %></div>
+    </div>
+  </div>
+  <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+    <div class="card glass glow p-3 h-100">
+      <h6 class="muted">Saldo</h6>
+      <div class="stat text-info"><%= currency(sum.balance, settings.currency) %></div>
+    </div>
+  </div>
+
+  <div class="col-lg-6" data-aos="zoom-in">
+    <div class="card glass p-3">
+      <h6 class="mb-3"><i class="fa fa-bullseye me-2"></i>Target Pengeluaran Bulanan</h6>
+      <p class="mb-1">Target: <strong><%= currency(settings.monthlyExpenseTarget, settings.currency) %></strong></p>
+      <p class="mb-1">Sisa Kuota: <strong><%= currency(expenseLeft, settings.currency) %></strong></p>
+      <p class="mb-0">Saran per hari sisa bulan ini: <strong><%= currency(suggestDailyExpense, settings.currency) %></strong></p>
+    </div>
+  </div>
+  <div class="col-lg-6" data-aos="zoom-in">
+    <div class="card glass p-3">
+      <h6 class="mb-3"><i class="fa fa-sack-dollar me-2"></i>Target Penghasilan Harian</h6>
+      <p class="mb-0">Delta kumulatif s/d hari ini:
+        <span class="<%= dailyTargetDelta>=0?'text-success':'text-danger' %> fw-bold">
+          <%= (dailyTargetDelta>=0?'+':'') %><%= currency(dailyTargetDelta, settings.currency) %>
+        </span>
+      </p>
+    </div>
+  </div>
+
+  <div class="col-12" data-aos="fade-up">
+    <div class="card glass p-3">
+      <h6 class="mb-3"><i class="fa fa-chart-area me-2"></i>Grafik Bulan Ini</h6>
+      <canvas id="chart1" height="110"></canvas>
+    </div>
+  </div>
+
+  <div class="col-12" data-aos="fade-up">
+    <div class="card glass p-3">
+      <h6 class="mb-3"><i class="fa fa-receipt me-2"></i>Transaksi Terbaru</h6>
+      <div class="table-responsive">
+        <table class="table table-dark table-hover align-middle">
+          <thead><tr><th>Tanggal</th><th>Jenis</th><th>Kategori</th><th>Catatan</th><th class="text-end">Jumlah</th><th></th></tr></thead>
+          <tbody>
+          <% txRecent.forEach(t=> { %>
+            <tr>
+              <td><%= t.date %></td>
+              <td><span class="badge <%= t.type==='income'?'badge-income':'badge-expense' %>"><%= t.type %></span></td>
+              <td><%= t.category %></td>
+              <td class="text-truncate" style="max-width:280px"><%= t.note %></td>
+              <td class="text-end fw-semibold"><%= currency(t.amount, settings.currency) %></td>
+              <td class="text-nowrap">
+                <a href="/tx/<%= t.id %>/edit" class="btn btn-sm btn-outline-info"><i class="fa fa-pen"></i></a>
+                <form action="/tx/<%= t.id %>/delete" method="post" class="d-inline" onsubmit="return confirm('Hapus transaksi?')">
+                  <button class="btn btn-sm btn-outline-danger"><i class="fa fa-trash"></i></button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function(){
+    const labels = <%- JSON.stringify(txRecent.map(t=>t.date).reverse()) %>;
+    const income = <%- JSON.stringify(txRecent.map(t=>t.type==='income'?t.amount:0).reverse()) %>;
+    const expense = <%- JSON.stringify(txRecent.map(t=>t.type==='expense'?t.amount:0).reverse()) %>;
+    const ctx = document.getElementById('chart1');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          { label:'Pemasukan', data: income },
+          { label:'Pengeluaran', data: expense }
+        ]
+      },
+      options: {
+        responsive: true,
+        interaction: { mode:'index', intersect:false },
+        tension: .35,
+        plugins: { legend: { labels: { boxWidth: 12 } } },
+        scales: { y: { ticks: { callback: v => new Intl.NumberFormat('id-ID').format(v) } } }
+      }
+    });
+  })();
+</script>
