@@ -1,0 +1,26 @@
+<div class="row justify-content-center">
+  <div class="col-lg-6" data-aos="zoom-in">
+    <div class="card glass p-4">
+      <h5 class="mb-3"><i class="fa fa-gear me-2"></i>Settings Target</h5>
+      <form method="post">
+        <div class="mb-3">
+          <label class="form-label">Mata Uang</label>
+          <input name="currency" class="form-control" value="<%= settings.currency %>">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Target Pengeluaran / Bulan</label>
+          <input type="number" name="monthlyExpenseTarget" class="form-control" value="<%= settings.monthlyExpenseTarget %>">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Target Penghasilan / Hari</label>
+          <input type="number" name="dailyIncomeTarget" class="form-control" value="<%= settings.dailyIncomeTarget %>">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Mulai Minggu Pada (0=Minggu,1=Senin)</label>
+          <input type="number" min="0" max="6" name="startWeekOn" class="form-control" value="<%= settings.startWeekOn %>">
+        </div>
+        <button class="btn btn-info"><i class="fa fa-save me-2"></i>Simpan</button>
+      </form>
+    </div>
+  </div>
+</div>
