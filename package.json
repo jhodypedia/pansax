@@ -13,7 +13,7 @@
     "ejs": "",
     "express": "",
     "express-ejs-layouts": "",
-    "express-session": "",
+    "cookie-session": "",
     "morgan": ""
   }
 }
