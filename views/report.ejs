@@ -1,0 +1,60 @@
+<div class="glass p-3 mb-3">
+  <h5 class="mb-0"><i class="fa fa-chart-column me-2"></i>Laporan Bulanan</h5>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-4" data-aos="fade-right">
+    <div class="card glass p-3 h-100">
+      <label class="form-label">Pilih Bulan</label>
+      <input type="month" class="form-control" value="<%= yyyymm %>"
+             oninput="location.href='/report/'+this.value" />
+      <hr>
+      <p class="mb-1">Pemasukan: <strong><%= currency(sum.income, settings.currency) %></strong></p>
+      <p class="mb-1">Pengeluaran: <strong><%= currency(sum.expense, settings.currency) %></strong></p>
+      <p class="mb-0">Saldo: <strong><%= currency(sum.balance, settings.currency) %></strong></p>
+    </div>
+  </div>
+
+  <div class="col-lg-8" data-aos="fade-left">
+    <div class="card glass p-3">
+      <h6 class="mb-3">Grafik Harian</h6>
+      <canvas id="daily" height="120"></canvas>
+    </div>
+  </div>
+
+  <div class="col-12" data-aos="fade-up">
+    <div class="card glass p-3">
+      <h6 class="mb-3">Rekap Per Kategori</h6>
+      <div class="table-responsive">
+        <table class="table table-dark table-striped align-middle">
+          <thead><tr><th>Jenis</th><th>Kategori</th><th class="text-end">Total</th></tr></thead>
+          <tbody>
+            <% rows.forEach(r => { %>
+              <tr>
+                <td><span class="badge <%= r.type==='income'?'badge-income':'badge-expense' %>"><%= r.type %></span></td>
+                <td><%= r.category %></td>
+                <td class="text-end"><%= currency(r.total, settings.currency) %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function(){
+    const labels = <%- JSON.stringify(days.map(d=>d.date)) %>;
+    const income = <%- JSON.stringify(days.map(d=>d.income)) %>;
+    const expense = <%- JSON.stringify(days.map(d=>d.expense)) %>;
+    new Chart(document.getElementById('daily'), {
+      type: 'bar',
+      data: { labels, datasets: [
+        { label:'Pemasukan', data: income },
+        { label:'Pengeluaran', data: expense }
+      ]},
+      options: { responsive:true, interaction:{ mode:'index', intersect:false } }
+    });
+  })();
+</script>
