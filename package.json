@@ -1,0 +1,19 @@
+{
+  "name": "finance-vercel",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node app.js",
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "@vercel/blob": "",
+    "body-parser": "",
+    "dayjs": "",
+    "ejs": "",
+    "express": "",
+    "express-ejs-layouts": "",
+    "express-session": "",
+    "morgan": ""
+  }
+}
