@@ -1,4 +1,4 @@
-// storage.js — aman untuk Vercel + dev lokal
+// storage.js — kompatibel Vercel + dev lokal
 import fs from "fs";
 import path from "path";
 import { put, list } from "@vercel/blob";
@@ -7,7 +7,7 @@ const isProd = process.env.VERCEL === "1" || process.env.ON_VERCEL === "true";
 const BLOB_PREFIX = process.env.BLOB_PREFIX || "finance";
 const RW_TOKEN = process.env.BLOB_READ_WRITE_TOKEN || "";
 
-// Direktori lokal (hanya dipakai saat dev)
+// Folder lokal hanya untuk dev
 const dataDir = path.join(process.cwd(), "data");
 if (!isProd) {
   if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
@@ -25,31 +25,51 @@ const DEFAULT_SETTINGS = {
   startWeekOn: 1,
 };
 
-/* -------------------- Helper Blob -------------------- */
+/* ----------------------------------------------------
+   Helper: ambil JSON terakhir dari Blob by prefix
+---------------------------------------------------- */
 async function blobGet(name, fallback) {
   try {
-    // Cari blob dengan prefix <prefix>/<name>
-    const { blobs } = await list({ prefix: `${BLOB_PREFIX}/${name}`, token: RW_TOKEN });
-    if (blobs && blobs.length) {
-      const res = await fetch(blobs[0].downloadUrl);
-      if (res.ok) return await res.json();
-    }
+    const { blobs } = await list({
+      prefix: `${BLOB_PREFIX}/${name}`,
+      token: RW_TOKEN,
+    });
+
+    if (!blobs || blobs.length === 0) return fallback;
+
+    // Ambil terbaru berdasarkan uploadedAt (atau lastModified)
+    const latest = blobs
+      .slice()
+      .sort((a, b) => new Date(b.uploadedAt || b.lastModified) - new Date(a.uploadedAt || a.lastModified))[0];
+
+    const res = await fetch(latest.downloadUrl);
+    if (!res.ok) throw new Error(`blobGet fetch failed: ${res.status}`);
+    return await res.json();
   } catch (e) {
     console.error("[blobGet error]", e?.message || e);
+    return fallback;
   }
-  return fallback;
 }
 
+/* ----------------------------------------------------
+   Helper: simpan JSON ke Blob
+   Catatan: @vercel/blob mewajibkan access: 'public'
+---------------------------------------------------- */
 async function blobPut(name, data) {
   if (!RW_TOKEN) throw new Error("BLOB_READ_WRITE_TOKEN belum di-set di Environment Variables");
+
+  // Menulis ke path yang sama; allowOverwrite diperlukan
   await put(`${BLOB_PREFIX}/${name}`, JSON.stringify(data, null, 2), {
-    access: "private",
+    access: "public",       // Wajib public di SDK saat ini
+    allowOverwrite: true,   // Agar update file yang sama tidak ditolak
     token: RW_TOKEN,
     contentType: "application/json",
   });
 }
 
-/* -------------------- Transaksi -------------------- */
+/* ----------------------------------------------------
+   API: Transaksi
+---------------------------------------------------- */
 export async function loadTx() {
   if (isProd) {
     // Prod → hanya dari Blob
@@ -69,7 +89,9 @@ export async function saveTx(arr) {
   fs.writeFileSync(file, JSON.stringify(arr, null, 2));
 }
 
-/* -------------------- Settings -------------------- */
+/* ----------------------------------------------------
+   API: Settings
+---------------------------------------------------- */
 export async function loadSettings() {
   if (isProd) {
     return await blobGet(FILES.set, DEFAULT_SETTINGS);
