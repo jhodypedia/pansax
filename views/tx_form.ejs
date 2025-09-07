@@ -1,0 +1,38 @@
+<div class="row justify-content-center">
+  <div class="col-lg-7" data-aos="fade-up">
+    <div class="card glass p-4">
+      <h5 class="mb-3"><i class="fa fa-pen me-2"></i><%= tx ? 'Edit' : 'Tambah' %> Transaksi</h5>
+      <form method="post" action="<%= tx ? '/tx/'+tx.id+'/edit' : '/tx/new' %>">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Tanggal</label>
+            <input type="date" name="date" class="form-control" value="<%= tx?tx.date:new Date().toISOString().slice(0,10) %>" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Jenis</label>
+            <select name="type" class="form-select" required>
+              <option value="income" <%= tx && tx.type==='income'?'selected':'' %>>Pemasukan</option>
+              <option value="expense" <%= tx && tx.type==='expense'?'selected':'' %>>Pengeluaran</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Jumlah</label>
+            <input type="number" name="amount" class="form-control" step="1" value="<%= tx?tx.amount:'' %>" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Kategori</label>
+            <input name="category" class="form-control" placeholder="Gaji / Makan / Transport / ..." value="<%= tx?tx.category:'' %>">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Catatan</label>
+            <input name="note" class="form-control" value="<%= tx?tx.note:'' %>">
+          </div>
+        </div>
+        <div class="mt-3">
+          <button class="btn btn-success"><i class="fa fa-check me-2"></i>Simpan</button>
+          <a href="/" class="btn btn-outline-light">Batal</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
